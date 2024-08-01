@@ -5,12 +5,15 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #34495e;
+    /* background-color: #34495e; */
+    background-color: #e8e8e8;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100vh;
     overflow: hidden;
+    gap: 15%;
+    font-family: Roboto, sans-serif;
 }
 
 .container {
@@ -120,69 +123,150 @@ body {
     letter-spacing: 1px;
 }
 
-/* .spin {
-    animation: start 2s cubic-bezier(0.47, 0, 0.75, 0.72),
-        spin 0.2s linear 2s infinite;
+.roulette {
+    width: 33vw;
+    height: 33vw;
+    max-width: 500px;
+    max-height: 500px;
+    position: relative;
 }
 
-@keyframes start {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+.roulette>#roulette-choices {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    background-color: white;
 }
 
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
+.roulette>#roulette-choices>* {
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    to {
-        transform: rotate(360deg);
-    }
+#roulette-choices span,
+#roulette-choices text {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    text-align: right;
+    /* margin: 15%; */
+    z-index: 10;
+    padding: 1em;
+}
+
+.roulette>#roulette-choices>div:not(:first-child) {
+    /* display: none; */
+}
+
+.choice-input {
+    display: flex;
+}
+
+.number-input {
+    display: flex;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* input {
+    border: 2px solid transparent;
+    width: 15em;
+    height: 2.5em;
+    padding-left: 0.8em;
+    outline: none;
+    overflow: hidden;
+    background-color: #F3F3F3;
+    border-radius: 10px;
+    transition: all 0.5s;
+}
+
+button {
+    border: 2px solid transparent;
+    width: 15em;
+    height: 2.5em;
+    outline: none;
+    overflow: hidden;
+    background-color: #F3F3F3;
+    border-radius: 10px;
+    transition: all 0.5s;
+}
+
+input:hover,
+input:focus {
+    border: 2px solid #4A9DEC;
+    box-shadow: 0px 0px 0px 7px rgb(74, 157, 236, 20%);
+    background-color: white;
 } */
 
-.spin-start {
-    animation: accelerate 1s ease-in-out 1 forwards;
+.input {
+    width: 33vw;
+    height: 33vw;
+    max-width: 300px;
+    max-height: 300px;
 }
 
-.spin-max {
-    animation: spin 2s linear infinite;
+.input input,
+.input button {
+    background: unset;
+    border: 0;
+    outline: 0;
 }
 
-.spin-stop {
-    animation: decelerate 1s ease-in-out 1 forwards;
+.choice-input {
+    border-bottom: 1px solid #515151;
 }
 
-@keyframes accelerate {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+input[type="number"] {
+    width: 2em;
+    text-align: center;
 }
 
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
+.roulette-choice {
+    position: relative;
 
-    to {
-        transform: rotate(360deg);
+    &>* {
+        position: absolute;
     }
 }
 
-@keyframes decelerate {
-    from {
-        transform: rotate(0deg);
-    }
+.list-choices .list-choice {
+    max-width: 100%;
+    display: flex;
+    /* justify-content: space-between; */
+}
 
-    to {
-        transform: rotate(360deg);
-    }
+.list-choices {
+    /* padding-left: 2em; */
+}
+
+input[name="choice-text"],
+.list-choice-text {
+    /* width: 100%; */
+    flex: 1;
+}
+
+.list-choice-no {
+    width: 2em;
+}
+
+.list-choice .list-choice-percentage {
+    width: 3em;
 }
