@@ -5,25 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Roulette</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
 </head>
 
 <body>
-    <div class="roulette">
-        <button id="spin">SPIN</button>
-        <div id="arrow"></div>
-        <div id="roulette-choices"></div>
-    </div>
-    <div class="input">
-        <div class="choice-input">
-            <input type="text" name="choice-text" />
-            <div class="number-input">
-                <button id="decrement">-</button>
-                <input type="number" min="1" value="1" />
-                <button id="increment">+</button>
-            </div>
-            <button id="add">Add</button>
+    <script>
+        const stats = new Stats();
+        stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        document.body.appendChild(stats.dom);
+        requestAnimationFrame(function loop() {
+            stats.update();
+            requestAnimationFrame(loop);
+        });
+    </script>
+    <div class="main">
+        <div class="roulette">
+            <button id="spin"><span class="spin">spin</span><span class="stop">stop</span></button>
+            <div id="arrow"></div>
+            <div id="roulette-choices"></div>
         </div>
-        <div class="list-choices"></ol>
+        <div class="input">
+            <div class="choice-input">
+                <input type="text" name="choice-text" />
+                <div class="number-input">
+                    <button id="decrement">-</button>
+                    <input type="number" min="1" value="1" />
+                    <button id="increment">+</button>
+                </div>
+                <button id="add">Add</button>
+            </div>
+            <div class="list-choices"></div>
+        </div>
     </div>
     <script src="index.js"></script>
 </body>

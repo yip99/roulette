@@ -8,7 +8,7 @@ const listChoices = document.querySelector('.list-choices');
 let button = document.querySelector('#spin');
 
 let isSpinning = false;
-let rotation;
+let rotation = 0;
 let animationFrameId;
 
 // let maxSpeed = 20; // degree per frame
@@ -25,18 +25,10 @@ let startSpeed;
 let stopSpeed;
 let speed = 0;
 
-let options = [
-    { text: 'option1', number: 1 },
-    { text: 'option2', number: 1 },
-    { text: 'option3', number: 1 },
-    { text: 'option4', number: 1 },
-    // { text: 'option5', number: 1 },
-    // { text: 'option6', number: 1 },
-    // { text: 'option7', number: 6 },
-    // { text: 'option8', number: 1 },
-    // { text: 'option8', number: 1 },
-    // { text: 'option8', number: 1 },
-];
+let options = [];
+let mostTop;
+let mostRight;
+
 let radius = rouletteChoices.getBoundingClientRect().width / 2;
 let angle;
 
@@ -70,6 +62,15 @@ function startSpin() {
 }
 
 function spin() {
+    // console.log('spin');
+    let result = getResult();
+    // console.log({ result });
+    if (result.mostTop !== mostTop) {
+        // console.log('diff');
+        mostTop = result.mostTop;
+        mostRight = result.mostRight;
+        // console.log(options[result.mostTop].text, options[result.mostRight].text);
+    }
     elapsed = Date.now() - then;
     fps = 1000 / elapsed;
     then = Date.now();
@@ -98,30 +99,14 @@ function stopSpin() {
     } else {
         cancelAnimationFrame(animationFrameId);
         console.timeLog("stopped");
-        let result = rotation % 360;
-        let mostTop = options[0].text;
-        let mostRight = options[1].text;
-        let from = 0;
-        let to = 0;
-        for (let i = options.length - 1; i >= 0; i--) {
-            to += options[i].number * angle;
-            if (result > from && result <= to) {
-                mostTop = options[i].text;
-            }
-            if ((result + 360 - 90) % 360 > from && (result + 360 - 90) % 360 <= to) {
-                mostRight = options[i].text;
-            }
-            if (mostTop && mostRight) {
-                break;
-            }
-            from = to;
-        }
-        console.log({ mostTop, mostRight });
+        let result = getResult();
+        console.log(options[result.mostTop].text, options[result.mostRight].text);
         // console.log(choice.element.textContent);
     }
 }
 
 button.addEventListener("click", () => {
+    button?.classList.toggle('spinning');
     if (!isSpinning) {
         console.timeEnd("stopped");
         isSpinning = true;
@@ -166,7 +151,7 @@ function easeInOutSine(x) {
 
 
 let colors = ['F38181', 'FCE38A', 'EAFFD0', '95E1D3', 'FFCFDF', 'FEFDCA', 'E0F9B5', 'A5DEE5'];
-let colorsLeft = [];
+// let colorsLeft = [];
 
 // circle = options.reduce((angle, option) => ``, 0)
 
@@ -204,7 +189,18 @@ document.querySelector('#decrement').addEventListener('click', () => {
 
 document.querySelector('#add').addEventListener('click', () => {
     console.log(choiceText);
-    options.push({ text: choiceText.value, number: +number.value });
+    options.push({
+        text: choiceText.value,
+        number: +number.value,
+        color: colors[Math.floor(Math.random() * colors.length)]
+    });
+    while (
+        options.length > 1 &&
+        (options[options.length - 1].color === options[options.length - 2]?.color ||
+            options[options.length - 1].color === options[0].color)
+    ) {
+        options[options.length - 1].color = colors[Math.floor(Math.random() * colors.length)];
+    }
     updateOption();
     choiceText.value = '';
     number.value = 1;
@@ -214,26 +210,30 @@ function updateOption() {
     listChoices.innerHTML = '';
     rouletteChoices.innerHTML = '';
     angle = 360 / options.reduce((total, obj) => obj.number + total, 0);
-    let degreeFrom = 0; // 0 + (options[0].number * angle / 2); (180 - angle) / 2;
-    rotation = (180 - angle) / 2;
-    if (!rotation) {
-    }
+    let degreeFrom = 0; // 0 - (angle * options[0].number / 2); // 0 + (options[0].number * angle / 2); (180 - angle) / 2;
+    // rotation = (180 - angle) / 2;
+    // if (!rotation) {
+    // }
     rouletteChoices.style.transform = `rotate(${rotation}deg)`;
     for (let i = 0; i < options.length; i++) {
-        if (!colorsLeft.length) {
-            colorsLeft = [...colors];
-        }
+        // if (!colorsLeft.length) {
+        //     colorsLeft = [...colors];
+        // }
         const degreeTo = options[i].number * angle; // degreeFrom + (options[i].number * angle);
-        const color = colorsLeft.splice(Math.floor(Math.random() * colorsLeft.length), 1);
-        const option = document.createElement('div');
-        option.className = 'roulette-choice';
+        // const color = colorsLeft.splice(Math.floor(Math.random() * colorsLeft.length), 1);
+        const choice = document.createElement('div');
+        choice.className = 'roulette-choice';
+        // choice.style.transform = `rotate(${degreeFrom + ((options[i].number - 1) * (angle / 2))}deg)`;
+        choice.style.transform = `rotate(${degreeFrom}deg)`;
+        // console.log(degreeFrom + (options[i].number > 1 ? (angle / options[i].number) : 0));
         // option.style.backgroundColor = `#${color}`;
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); // 1
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); // 1
         svg.setAttribute('width', `${radius * 2}`);
         svg.setAttribute('height', `${radius * 2}`);
+        // svg.style.transform = `rotate(${(180 - degreeTo) / 2}deg)`;
         svg.appendChild(path)
-        path.setAttribute('fill', `#${color}`);
+        path.setAttribute('fill', `#${options[i].color}`);
         if (options.length === 1) {
             path.setAttribute('d', `M ${radius} ${radius} M ${radius * 2} ${radius} A ${radius} ${radius} 0 1 0 0 ${radius} A ${radius} ${radius} 0 1 0 ${radius * 2} ${radius}`);
             // option.style.clipPath = `path('M ${radius} ${radius} M ${radius * 2} ${radius} A ${radius} ${radius} 0 1 0 0 ${radius} A ${radius} ${radius} 0 1 0 ${radius * 2} ${radius}`;
@@ -241,13 +241,15 @@ function updateOption() {
             path.setAttribute('d', `M ${radius} ${radius} L ${radius} 0 A ${radius} ${radius} 0 ${degreeTo > 180 ? '1' : '0'} 1 ${x(radius, radius, degreeTo)} ${y(radius, radius, degreeTo)} Z`);
             // option.style.clipPath = `path('M ${radius} ${radius} L ${radius} 0 A ${radius} ${radius} 0 ${degreeTo > 180 ? '1' : '0'} 1 ${x(radius, radius, degreeTo)} ${y(radius, radius, degreeTo)} Z')`;
         }
-        option.style.transform = `rotate(${degreeFrom}deg)`;
+        // option.style.transform = `rotate(${degreeFrom}deg)`;
         const text = document.createElement('span');
         text.textContent = options[i].text;
+        // text.style.transform = `rotate(${(degreeTo - 180) / 2}deg)`;
         text.style.transform = `rotate(${(degreeTo - 180) / 2}deg)`;
-        option.appendChild(svg);
-        option.appendChild(text);
-        rouletteChoices.appendChild(option);
+        // console.log({ degreeTo });
+        choice.appendChild(svg);
+        choice.appendChild(text);
+        rouletteChoices.appendChild(choice);
         //         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         //         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         //         // const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -299,6 +301,28 @@ function updateOption() {
         });
 
         listChoice.append(listChoiceNo, listChoiceText, listChoiceDecrement, listChoiceNumber, listChoiceIncrement, listChoicePercentage, listChoiceRemove);
-        listChoices?.appendChild(listChoice);
+        listChoices.appendChild(listChoice);
     }
+}
+
+function getResult() {
+    let mostTop = 0;
+    let mostRight;
+    let theta = rotation % 360;
+    let from = 0;
+    let to = 0;
+    for (let i = options.length - 1; i >= 0; i--) {
+        to += options[i].number * angle;
+        if (theta > from && theta <= to) {
+            mostTop = i;
+        }
+        if ((theta + 360 - 90) % 360 > from && (theta + 360 - 90) % 360 <= to) {
+            mostRight = i;
+        }
+        if (mostTop && mostRight) {
+            break;
+        }
+        from = to;
+    }
+    return { mostTop, mostRight };
 }
