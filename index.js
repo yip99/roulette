@@ -7,6 +7,9 @@ const listChoices = document.querySelector('.list-choices');
 
 let button = document.querySelector('#spin');
 
+let arrowAngle = 90;
+document.querySelector('#arrow-container').style.transform = `rotate(${90}deg)`;
+
 let isSpinning = false;
 let rotation = 0;
 let animationFrameId;
@@ -26,8 +29,6 @@ let stopSpeed;
 let speed = 0;
 
 let options = [];
-let mostTop;
-let mostRight;
 
 let radius = rouletteChoices.getBoundingClientRect().width / 2;
 let angle;
@@ -63,14 +64,6 @@ function startSpin() {
 
 function spin() {
     // console.log('spin');
-    let result = getResult();
-    // console.log({ result });
-    if (result.mostTop !== mostTop) {
-        // console.log('diff');
-        mostTop = result.mostTop;
-        mostRight = result.mostRight;
-        // console.log(options[result.mostTop].text, options[result.mostRight].text);
-    }
     elapsed = Date.now() - then;
     fps = 1000 / elapsed;
     then = Date.now();
@@ -100,7 +93,7 @@ function stopSpin() {
         cancelAnimationFrame(animationFrameId);
         console.timeLog("stopped");
         let result = getResult();
-        console.log(options[result.mostTop].text, options[result.mostRight].text);
+        console.log(options[result].text);
         // console.log(choice.element.textContent);
     }
 }
@@ -188,7 +181,16 @@ document.querySelector('#decrement').addEventListener('click', () => {
 });
 
 document.querySelector('#add').addEventListener('click', () => {
-    console.log(choiceText);
+    addOption();
+});
+
+choiceText?.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        addOption();
+    }
+});
+
+function addOption() {
     options.push({
         text: choiceText.value,
         number: +number.value,
@@ -204,7 +206,9 @@ document.querySelector('#add').addEventListener('click', () => {
     updateOption();
     choiceText.value = '';
     number.value = 1;
-});
+    choiceText.focus();
+}
+
 updateOption();
 function updateOption() {
     listChoices.innerHTML = '';
@@ -245,7 +249,7 @@ function updateOption() {
         const text = document.createElement('span');
         text.textContent = options[i].text;
         // text.style.transform = `rotate(${(degreeTo - 180) / 2}deg)`;
-        text.style.transform = `rotate(${(degreeTo - 180) / 2}deg)`;
+        text.style.transform = `rotate(${degreeTo < 360 ? (degreeTo - 180) / 2 : 0}deg)`;
         // console.log({ degreeTo });
         choice.appendChild(svg);
         choice.appendChild(text);
@@ -306,23 +310,15 @@ function updateOption() {
 }
 
 function getResult() {
-    let mostTop = 0;
-    let mostRight;
     let theta = rotation % 360;
     let from = 0;
     let to = 0;
     for (let i = options.length - 1; i >= 0; i--) {
         to += options[i].number * angle;
-        if (theta > from && theta <= to) {
-            mostTop = i;
-        }
-        if ((theta + 360 - 90) % 360 > from && (theta + 360 - 90) % 360 <= to) {
-            mostRight = i;
-        }
-        if (mostTop && mostRight) {
-            break;
+        if ((theta + 360 - arrowAngle) % 360 > from && (theta + 360 - arrowAngle) % 360 <= to) {
+            return i;
         }
         from = to;
     }
-    return { mostTop, mostRight };
+    return 0;
 }
