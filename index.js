@@ -1,20 +1,52 @@
+class Choices extends Map {
+    first() {
+        return super.entries().next().value;
+    }
+    last() {
+        return [...super.entries()].at(-1);
+    }
+    add(key, value) {
+        if (super.has(key)) {
+            super.get(key).number += (+value.number);
+        } else {
+            super.set(key, value);
+            this.lastItem = [key, super.get(key)];
+        }
+    }
+}
+
 const numberFormat = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 2,
 });
 
-let rouletteChoices = document.querySelector('.roulette #roulette-choices');
-const listChoices = document.querySelector('.list-choices');
+const colors = [
+    '#F38181',
+    '#FCE38A',
+    '#EAFFD0',
+    '#95E1D3',
+    '#FFCFDF',
+    '#FEFDCA',
+    '#E0F9B5',
+    '#A5DEE5',
+    '#fbe3f7',
+    '#c8fcea',
+    '#6a9a8b',
+    '#7fd1ae',
+];
 
-let button = document.querySelector('#spin');
+const elementRouletteChoices = document.querySelector('.roulette #roulette-choices');
+const elementListChoices = document.querySelector('.list-choices');
+const inputNumber = document.querySelector('input[type="number"]');
+const inputText = document.querySelector('input[name="choice-text"]');
+const buttonSpin = document.querySelector('#spin');
+const elementResults = document.querySelector('.results');
 
-// let arrowAngle = 90;
-// document.querySelector('#arrow-container').style.transform = `rotate(${90}deg)`;
+const arrowAngle = +getComputedStyle(document.body).getPropertyValue('--arrow-angle').match(/rotate\(([+-]?\d+)deg\)/)?.[1];
 
 let isSpinning = false;
 let rotation = 0;
 let animationFrameId;
 
-// let maxSpeed = 20; // degree per frame
 let maxSpeed = 360 * 5; // degree per second
 let accelerateTime = 3_000;
 let decelerateTime = 15_000;
@@ -29,88 +61,28 @@ let stopSpeed;
 let speed = 0;
 
 let options = [];
-const choices = new Map();
+const choices = new Choices();
+const results = [];
 
 
-let radius = rouletteChoices.getBoundingClientRect().width / 2;
+let radius = elementRouletteChoices.getBoundingClientRect().width / 2;
 let angle;
 
-function startSpin() {
-    elapsed = Date.now() - then;
-    fps = 1000 / elapsed;
-    then = Date.now();
-    if (Date.now() - startTime < accelerateTime * (1 - startSpeed / maxSpeed)) {
-        // 1
-        // if (Date.now() - startTime < accelerateTime && Date.now() - startTime < accelerateTime * (Date.now() - startTime / accelerateTime)) { // 2
-        // if (Date.now() - startTime < accelerateTime) { // 0
-        // speed = maxSpeed * bezierBlend((Date.now() - startTime) / accelerateTime); // 0
-        speed =
-            maxSpeed *
-            easeInOutSine(
-                (Date.now() - startTime) /
-                (accelerateTime * (1 - startSpeed / maxSpeed)),
-            ) +
-            startSpeed *
-            (1 -
-                (Date.now() - startTime) /
-                (accelerateTime * (1 - startSpeed / maxSpeed))); // 1
-        // speed = maxSpeed * bezierBlend((Date.now() - startTime) / (accelerateTime * (1 - (Date.now() - startTime / accelerateTime)))); // 2
-        rotation += (speed / fps);
-        rouletteChoices.style.transform = `rotate(${rotation}deg)`;
-        animationFrameId = requestAnimationFrame(startSpin);
-    } else {
-        console.timeLog("max", speed);
-        spin();
-    }
-}
+window.addEventListener('resize', function () {
+    radius = elementRouletteChoices.getBoundingClientRect().width / 2;
+    updateOption();
+}, true);
 
-function spin() {
-    // console.log('spin');
-    elapsed = Date.now() - then;
-    fps = 1000 / elapsed;
-    then = Date.now();
-    rotation += speed / fps;
-    rouletteChoices.style.transform = `rotate(${rotation}deg)`;
-    animationFrameId = requestAnimationFrame(spin);
-}
-
-function stopSpin() {
-    elapsed = Date.now() - then;
-    fps = 1000 / elapsed;
-    then = Date.now();
-    if (Date.now() - stopTime < decelerateTime * (stopSpeed / maxSpeed)) {
-        // 1
-        // if (Date.now() - stopTime < decelerateTime) {
-        // speed = stopSpeed * bezierBlend(1 - ((Date.now() - stopTime) / decelerateTime));
-        speed =
-            stopSpeed *
-            (1 -
-                easeInOutSine(
-                    (Date.now() - stopTime) / (decelerateTime * (stopSpeed / maxSpeed)),
-                )); // 1
-        rotation += speed / fps;
-        rouletteChoices.style.transform = `rotate(${rotation}deg)`;
-        animationFrameId = requestAnimationFrame(stopSpin);
-    } else {
-        cancelAnimationFrame(animationFrameId);
-        console.timeLog("stopped");
-        let result = getResult();
-        console.log(result);
-        // console.log(choice.element.textContent);
-    }
-}
-
-button.addEventListener("click", () => {
-    if (choices.size === 0) {
+buttonSpin.addEventListener("click", () => {
+    if (choices.size < 2) {
         return;
     }
-    button?.classList.toggle('spinning');
+    buttonSpin?.classList.toggle('spinning');
     if (!isSpinning) {
         console.timeEnd("stopped");
         isSpinning = true;
         cancelAnimationFrame(animationFrameId);
         console.time("max");
-        // console.timeLog('max');
         console.log("start");
         console.log("accelerate", speed, performance.now());
         startTime = Date.now();
@@ -128,50 +100,13 @@ button.addEventListener("click", () => {
     }
 });
 
-function easeInOutSine(x) {
-    return -(Math.cos(Math.PI * x) - 1) / 2;
-}
-
-
-let colors = [
-    '#F38181',
-    '#FCE38A',
-    '#EAFFD0',
-    '#95E1D3',
-    '#FFCFDF',
-    '#FEFDCA',
-    '#E0F9B5',
-    '#A5DEE5',
-    '#fbe3f7',
-    '#c8fcea',
-    '#6a9a8b',
-    '#7fd1ae',
-];
-
-function randomColor() {
-    return Math.floor(Math.random() * 16777215).toString(16);
-}
-
-function x(cx, radius, degree) {
-    return cx + (radius * Math.sin(degree * (Math.PI / 180)));
-    // return cx + (radius * Math.cos(degree * (Math.PI / 180)));
-}
-
-function y(cy, radius, degree) {
-    return cy - (radius * Math.cos(degree * (Math.PI / 180)));
-    // return cy - (radius * Math.sin(degree * (Math.PI / 180)));
-}
-
-let number = document.querySelector('input[type="number"]');
-let choiceText = document.querySelector('input[name="choice-text"]');
-
 document.querySelector('#increment').addEventListener('click', () => {
-    number.value = (+number.value) + 1;
+    inputNumber.value = (+inputNumber.value) + 1;
 });
 
 document.querySelector('#decrement').addEventListener('click', () => {
-    if (+number.value > 1) {
-        number.value = (+number.value) - 1;
+    if (+inputNumber.value > 1) {
+        inputNumber.value = (+inputNumber.value) - 1;
     }
 });
 
@@ -179,41 +114,94 @@ document.querySelector('#add').addEventListener('click', () => {
     addOption();
 });
 
-choiceText?.addEventListener('keypress', (event) => {
+inputText?.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         addOption();
     }
 });
 
-function addOption() {
-    if (choices.has(choiceText.value)) {
-        choices.get(choiceText.value).number += (+number.value);
+function startSpin() {
+    elapsed = Date.now() - then;
+    fps = 1000 / elapsed;
+    then = Date.now();
+    if (Date.now() - startTime < accelerateTime * (1 - startSpeed / maxSpeed)) {
+        speed = maxSpeed * easeInOutSine((Date.now() - startTime) / (accelerateTime * (1 - startSpeed / maxSpeed))) + startSpeed * (1 - (Date.now() - startTime) / (accelerateTime * (1 - startSpeed / maxSpeed)));
+        rotation += (speed / fps);
+        elementRouletteChoices.style.transform = `rotate(${rotation}deg)`;
+        animationFrameId = requestAnimationFrame(startSpin);
     } else {
-        const choice = {
-            number: +number.value,
-            color: colors[Math.floor(Math.random() * colors.length)]
-        }
-        const firstChoice = choices.values().next().value;
-        const lastChoice = [...choices.values()].at(-1);
+        console.timeLog("max", speed);
+        spin();
+    }
+}
+
+function spin() {
+    // console.log('spin');
+    elapsed = Date.now() - then;
+    fps = 1000 / elapsed;
+    then = Date.now();
+    rotation += speed / fps;
+    elementRouletteChoices.style.transform = `rotate(${rotation}deg)`;
+    animationFrameId = requestAnimationFrame(spin);
+}
+
+function stopSpin() {
+    elapsed = Date.now() - then;
+    fps = 1000 / elapsed;
+    then = Date.now();
+    if (Date.now() - stopTime < decelerateTime * (stopSpeed / maxSpeed)) {
+        speed = stopSpeed * (1 - easeInOutSine((Date.now() - stopTime) / (decelerateTime * (stopSpeed / maxSpeed))));
+        rotation += speed / fps;
+        elementRouletteChoices.style.transform = `rotate(${rotation}deg)`;
+        animationFrameId = requestAnimationFrame(stopSpin);
+    } else {
+        cancelAnimationFrame(animationFrameId);
+        console.timeLog("stopped");
+        const result = getResult();
+        results.push(result);
+        displayResult();
+        console.log({ results, result });
+    }
+}
+
+function easeInOutSine(x) {
+    return -(Math.cos(Math.PI * x) - 1) / 2;
+}
+
+function x(cx, radius, degree) {
+    return cx + (radius * Math.sin(degree * (Math.PI / 180)));
+}
+
+function y(cy, radius, degree) {
+    return cy - (radius * Math.cos(degree * (Math.PI / 180)));
+}
+
+function addOption() {
+    const choice = {
+        number: +inputNumber.value,
+        color: colors[Math.floor(Math.random() * colors.length)],
+    }
+    if (!choices.has(inputText.value)) {
+        const firstChoice = choices.first()?.[1];
+        const lastChoice = choices.last()?.[1];
         while ([firstChoice?.color, lastChoice?.color].includes(choice.color)) {
             choice.color = colors[Math.floor(Math.random() * colors.length)];
         }
-        choices.set(choiceText.value, choice);
-    };
+    }
+    choices.add(inputText.value, choice);
     updateOption();
-    choiceText.value = '';
-    number.value = 1;
-    choiceText.focus();
+    inputText.value = '';
+    inputNumber.value = 1;
+    inputText.focus();
 }
 
-updateOption();
 function updateOption() {
-    listChoices.innerHTML = '';
-    rouletteChoices.innerHTML = '';
+    elementListChoices.innerHTML = '';
+    elementRouletteChoices.innerHTML = '';
     angle = 360 / [...choices.values()].reduce((total, obj) => obj.number + total, 0);
     let degreeFrom = 0;
     // rotation = (180 - angle) / 2;
-    rouletteChoices.style.transform = `rotate(${rotation}deg)`;
+    elementRouletteChoices.style.transform = `rotate(${rotation}deg)`;
     let no = 1;
     choices.forEach(({ number, color }, text) => {
         const degreeTo = number * angle;
@@ -237,7 +225,7 @@ function updateOption() {
         span.style.transform = `rotate(${degreeTo < 360 ? (degreeTo - 180) / 2 : 0}deg)`;
         div.appendChild(svg);
         div.appendChild(span);
-        rouletteChoices.appendChild(div);
+        elementRouletteChoices.appendChild(div);
         degreeFrom += degreeTo;
 
         const listChoice = document.createElement('div');
@@ -250,10 +238,11 @@ function updateOption() {
         const listChoiceRemove = document.createElement('button');
 
         listChoice.className = 'list-choice';
-        listChoiceNo.className = 'list-choice-no';
+        listChoiceNo.className = 'number';
         listChoiceNo.textContent = `${no++}.`;
         listChoiceText.className = 'list-choice-text';
         listChoiceText.textContent = text;
+        listChoiceText.title = text;
         listChoiceDecrement.textContent = '-';
         listChoiceDecrement.addEventListener('click', () => {
             if (number < 2) {
@@ -281,20 +270,40 @@ function updateOption() {
         });
 
         listChoice.append(listChoiceNo, listChoiceText, listChoiceDecrement, listChoiceNumber, listChoiceIncrement, listChoicePercentage, listChoiceRemove);
-        listChoices.appendChild(listChoice);
+        elementListChoices.appendChild(listChoice);
     });
 }
 
 function getResult() {
     let theta = rotation % 360;
-    let from = 0;
-    let to = 0;
-    choices.forEach(({ number }, text) => {
-        to += number * angle;
-        if ((theta + 360 - arrowAngle) % 360 > from && (theta + 360 - arrowAngle) % 360 <= to) {
+    let from = 360;
+    let to = 360;
+    if (theta === 0) {
+        return choices.first()?.[0];
+    }
+    for (let [text, { number }] of choices) {
+        to = from;
+        from -= number * angle;
+        console.log((360 + theta - arrowAngle) % 360, { theta: (360 + theta - arrowAngle) % 360, text, from, to });
+        if ((360 + theta - arrowAngle) % 360 >= from && (360 + theta - arrowAngle) % 360 < to) {
             return text;
         }
-        from = to;
-    });
-    return choices.keys().next().value;
+    }
+}
+
+function displayResult() {
+    elementResults.innerHTML = '';
+    for (let i = 0; i < results.length; i++) {
+        const div = document.createElement('div');
+        div.className = 'result';
+        const number = document.createElement('span');
+        number.className = 'number';
+        number.innerText = `${i + 1}.`;
+        const span = document.createElement('span');
+        span.innerText = results[i];
+        span.title = results[i];
+        div.appendChild(number);
+        div.appendChild(span);
+        elementResults?.appendChild(div);
+    }
 }

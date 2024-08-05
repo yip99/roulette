@@ -25,7 +25,6 @@ body {
     background-color: #e8e8e8;
 
     height: 100vh;
-    overflow: hidden;
     /* gap: 15%; */
     font-family: Roboto, sans-serif;
 }
@@ -36,15 +35,24 @@ body {
     align-items: center;
     /* justify-content: space-evenly; */
     gap: 5%;
-    margin: 0 5%;
+    /* margin: 0 5%; */
+    overflow: hidden;
+
+    &>* {
+        max-width: 400px;
+        width: 20vw;
+        height: 400px;
+    }
 }
 
 @media only screen and (max-width: 600px) {
     .main {
         flex-direction: column;
+        padding: 5%;
     }
 
-    .input {
+    .input,
+    .results-container {
         width: 90vw;
     }
 }
@@ -207,7 +215,7 @@ body {
     }
 }
 
-.list-choices {
+.list-choices-container {
     overflow: auto;
     height: 100%;
 
@@ -226,10 +234,6 @@ body {
 
         &>* {
             align-content: center;
-        }
-
-        & .list-choice-no {
-            width: 2em;
         }
 
         & .list-choice-percentage {
@@ -254,4 +258,12 @@ input[name="choice-text"],
 input[type="number"] {
     width: 2em;
     text-align: center;
+}
+
+.number {
+    width: 2em;
+}
+
+.result {
+    display: flex;
 }
