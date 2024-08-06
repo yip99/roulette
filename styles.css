@@ -182,13 +182,14 @@ body {
 .input {
     max-width: 400px;
     height: 400px;
+    display: flex;
+    flex-direction: column;
 
     & .choice-input {
         display: flex;
         position: sticky;
         top: 0;
         background-color: #e8e8e8;
-        border-bottom: 1px solid #515151;
 
         & .number-input {
             display: flex;
@@ -196,12 +197,12 @@ body {
     }
 }
 
-.input button {
+button {
     cursor: pointer;
 }
 
-.input input,
-.input button {
+input,
+button {
     background: unset;
     border: 0;
     outline: 0;
@@ -217,14 +218,10 @@ body {
 
 .list-choices-container {
     overflow: auto;
-    height: 100%;
+    flex: 1;
 
     & .list-choice:hover {
         background-color: #e2e2e2;
-    }
-
-    & .list-choice:has(.remove:hover) {
-        outline: 1px solid red;
     }
 
     & .list-choice {
@@ -266,4 +263,31 @@ input[type="number"] {
 
 .result {
     display: flex;
+}
+
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
+.results-container {
+    width: 33vw;
+    display: flex;
+    flex-direction: column;
+}
+
+.results {
+    overflow: auto;
+    flex: 1;
+}
+
+input[type="color"] {
+    height: 1.5em;
+    width: 2em;
 }
