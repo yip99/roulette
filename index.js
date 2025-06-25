@@ -80,11 +80,11 @@ const choices = [];
 const results = [];
 
 
-let radius = elementRouletteChoices.getBoundingClientRect().width / 2;
+let radius = elementRouletteChoices.parentNode.getBoundingClientRect().width / 2;
 let angle;
 
 window.addEventListener('resize', function () {
-    radius = elementRouletteChoices.getBoundingClientRect().width / 2;
+    radius = elementRouletteChoices.parentNode.getBoundingClientRect().width / 2;
     updateChoice();
 }, true);
 
